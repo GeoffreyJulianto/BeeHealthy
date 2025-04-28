@@ -6,3 +6,9 @@ Ini adalah editan dari Hendy
 Ini Marcel
 
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+requirement : 
+A)
+B)
+C)
+D)
