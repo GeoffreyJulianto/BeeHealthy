@@ -1,152 +1,128 @@
 import 'package:flutter/material.dart';
+import 'package:project_1_beehealty/sign_up_page.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const BeeProductiveApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class BeeProductiveApp extends StatelessWidget {
+  const BeeProductiveApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'BeeProductive',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'SF Pro Display', // iOS-like font
+        primarySwatch: Colors.amber,
       ),
-
-      home: LoginScreen (), debugShowCheckedModeBanner: false,
+      home: const WelcomeScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class WelcomeScreen extends StatelessWidget {
+  const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(height: 35),
-              // Bee Logo Placeholder
-              SizedBox(
-                width: 100,
-                height: 100,
-                child: Center(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // 🐝 Bee image placeholder
+                SizedBox(
+                  height: 150,
                   child: Image.asset(
-                    'assets/bee_logo.png',
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.contain
+                    'assets/bee_img_logo.png', // Replace with your image asset
+                    fit: BoxFit.contain,
                   ),
                 ),
-              ),
-              SizedBox(height: 30),
-              // Welcome Text
-              Text(
-                'Welcome to',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Text(
-                'BeeProductive!',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black
-                ),
-              ),
-              SizedBox(height: 60),
-              // Sign in with Apple button
-              _buildSignInButton(
-                icon: Icon(Icons.apple, color: Colors.black, size: 30,),
-                text: 'Sign in with Apple',
-                onPressed: () {},
-              ),
-              SizedBox(height: 20),
-              // Sign in with Google button
-              _buildSignInButton(
-                icon: Image.asset('assets/google_logo.png', width: 27, height: 27),
-                text: 'Sign in with Google',
-                onPressed: () {},
-              ),
-              SizedBox(height: 20),
-              // Sign in with Facebook button
-              _buildSignInButton(
-                icon: Icon(Icons.facebook, color: Colors.blue, size: 30),
-                text: 'Sign in with Facebook',
-                onPressed: () {},
-              ),
-              SizedBox(height: 15),
-              // Divider with text
-              Row(
-                children: [
-                  Expanded(child: Divider(color: Colors.grey.shade300)),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text('OR', style: TextStyle(color: Colors.grey, fontSize: 15)),
-                  ),
-                  Expanded(child: Divider(color: Colors.grey.shade300)),
-                ],
-              ),
-              SizedBox(height: 15),
-              // Sign up button
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.lightBlueAccent,
-                  foregroundColor: Colors.black87,
-                  minimumSize: Size(130, 55),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25), side: BorderSide(color: Colors.black87, width: 1)
+                const SizedBox(height: 10),
+                const Text(
+                  'Welcome to\nBeeProductive!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                child: Text('Sign Up', style: TextStyle(fontSize: 17, color: Colors.black)),
-              ),
-            ],
+                const SizedBox(height: 40),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color.fromRGBO(229, 155, 60, 1),
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 17),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SignUpPage()),
+                      );
+                    },
+                    child: const Text('SIGN UP',style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: const [
+                    Expanded(child: Divider(thickness: 1)),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Text('Or'),
+                    ),
+                    Expanded(child: Divider(thickness: 1)),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _socialButton('Sign in with Apple', 'assets/apple_logo.png'),
+                const SizedBox(height: 10),
+                _socialButton('Sign in with Google', 'assets/google_logo.png'),
+                const SizedBox(height: 10),
+                _socialButton('Sign in with Facebook', 'assets/facebook_logo.png'),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
-
-  Widget _buildSignInButton({
-    required Widget icon,
-    required String text,
-    required VoidCallback onPressed,
-  }) {
-    return OutlinedButton(
-      onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        backgroundColor: Colors.white,
-        minimumSize: Size(double.infinity, 60),
-        side: BorderSide(color: Colors.black, width: 1.5),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8)
+}
+  Widget _socialButton(String text, String imagePath) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: () {},
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          side: const BorderSide(color: Colors.black12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          icon,
-          SizedBox(width: 12),
-          Text(text,
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87
-              )),
-        ],
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 20.0, top: 5, bottom: 5), // Customize this as needed
+              child: Image.asset(
+                imagePath,
+                height: 24,
+                width: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Text(text, style: TextStyle(fontSize: 15, color: Colors.black)),
+          ],
+        ),
       ),
     );
   }
-}
+
