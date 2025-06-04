@@ -52,7 +52,7 @@ class _ProfilePageState extends State<ProfilePage> {
     "Profile",
   ];
 
-  void _onItemTapped(int index) {
+  void _onItemTapped(int index) async {
     if (index == _selectedIndex) return;
 
     setState(() {
@@ -73,10 +73,34 @@ class _ProfilePageState extends State<ProfilePage> {
         );
         break;
       case 2:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => ResultNew()),
-        );
+        try {
+          final dir = await getApplicationDocumentsDirectory();
+          final file = File('${dir.path}/signup_data.json');
+          if (await file.exists()) {
+            final jsonString = await file.readAsString();
+            final Map<String, dynamic> data = jsonDecode(jsonString);
+            final bool result = data['result'] == true;
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => result ? Result1() : ResultNew(),
+              ),
+            );
+          } else {
+            // Fallback if file not found
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => ResultNew()),
+            );
+          }
+        } catch (e) {
+          debugPrint('Error reading result from file: $e');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => ResultNew()),
+          );
+        }
         break;
       case 3:
         Navigator.pushReplacement(

@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:convert'; // Needed for jsonDecode
 import 'dart:io';      // Needed for File
 import 'result_1.dart';
+import 'scheduleCategory_page.dart';
 
 void main() {
   runApp(const HomePage());
@@ -183,10 +184,10 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.orange,
         onPressed: () {
-          // Navigator.pushReplacement(
-          //     context,
-          //     MaterialPageRoute(builder: (context) => ProductivityProfile1())
-          // );
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => ScheduleCategoryPage())
+          );
         },
         child: const Icon(Icons.add),
       ),

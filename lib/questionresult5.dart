@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:io';
 import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
+import 'result_1.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -99,6 +100,10 @@ class ProductivityProfile5 extends StatelessWidget {
                         ),
                         onPressed: () {
                           updateJsonResult();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => Result1()),
+                          );
                         },
                         child: Text(
                           "Save Changes",

@@ -36,7 +36,7 @@ class _Result1State extends State<Result1> {
       case 2:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => ResultNew()),
+          MaterialPageRoute(builder: (context) => Result1()),
         );
         break;
       case 3:

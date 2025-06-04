@@ -3,6 +3,12 @@ import 'footer.dart';
 // import 'package:beehealthy/components/header.dart';
 import 'schedule_page.dart';
 import 'home_page.dart';
+import 'result_new.dart';
+import 'profile_page.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'result_1.dart';
 
 
 class ScheduleCategoryPage extends StatefulWidget {
@@ -15,22 +21,61 @@ class ScheduleCategoryPage extends StatefulWidget {
 class _ScheduleCategoryPageState extends State<ScheduleCategoryPage> {
   int _selectedIndex = 1; // Highlight "Plans"
 
-  void _onItemTapped(int index) {
+  void _onItemTapped(int index) async {
     if (index == _selectedIndex) return;
+
+    setState(() {
+      _selectedIndex = index;
+    });
 
     switch (index) {
       case 0:
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (_) => const HomePage()));
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
         break;
       case 1:
-        // Already on Plans
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const SchedulePage()),
+        );
         break;
       case 2:
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ResultsPage()));
+        try {
+          final dir = await getApplicationDocumentsDirectory();
+          final file = File('${dir.path}/signup_data.json');
+          if (await file.exists()) {
+            final jsonString = await file.readAsString();
+            final Map<String, dynamic> data = jsonDecode(jsonString);
+            final bool result = data['result'] == true;
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => result ? Result1() : ResultNew(),
+              ),
+            );
+          } else {
+            // Fallback if file not found
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => ResultNew()),
+            );
+          }
+        } catch (e) {
+          debugPrint('Error reading result from file: $e');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => ResultNew()),
+          );
+        }
         break;
       case 3:
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ProfilePage()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ProfilePage()),
+        );
         break;
     }
   }

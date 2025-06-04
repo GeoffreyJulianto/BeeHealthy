@@ -42,16 +42,40 @@ class _SignUpPageState extends State<SignUpPage> {
   // Save data to JSON file
   Future<void> saveToJson(Map<String, dynamic> data) async {
     final directory = await getApplicationDocumentsDirectory();
-    final file = File('${directory.path}/signup_data.json');
-    await file.writeAsString(jsonEncode(data), flush: true);
 
+    // File paths
+    final profilePathFile = File('${directory.path}/profile_image_path.txt');
+    final surveyAnswersFile = File('${directory.path}/survey_answers.json');
+
+    // Delete profile image if path exists
+    if (await profilePathFile.exists()) {
+      try {
+        final imagePath = await profilePathFile.readAsString();
+        final imageFile = File(imagePath);
+        if (await imageFile.exists()) {
+          await imageFile.delete();
+        }
+      } catch (e) {
+        debugPrint("Error reading/deleting profile image: $e");
+      }
+      await profilePathFile.delete(); // Delete the path file itself
+    }
+
+    // Delete survey answers
+    if (await surveyAnswersFile.exists()) {
+      await surveyAnswersFile.delete();
+    }
+
+    // Save new signup data
+    final signupFile = File('${directory.path}/signup_data.json');
+    await signupFile.writeAsString(jsonEncode(data), flush: true);
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("User registered and data saved!")),
+      const SnackBar(content: Text("User registered and data saved!")),
     );
-
   }
+
 
   @override
   Widget build(BuildContext context) {

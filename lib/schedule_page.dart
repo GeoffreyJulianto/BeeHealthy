@@ -5,6 +5,10 @@ import 'home_page.dart';
 import 'scheduleCategory_page.dart';
 import 'result_new.dart';
 import 'profile_page.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'result_1.dart';
 
 class SchedulePage extends StatefulWidget {
   const SchedulePage({super.key});
@@ -16,7 +20,7 @@ class SchedulePage extends StatefulWidget {
 class _SchedulePageState extends State<SchedulePage> {
   int _selectedIndex = 1; // Highlight "Plans"
 
-  void _onItemTapped(int index) {
+  void _onItemTapped(int index) async {
     if (index == _selectedIndex) return;
 
     setState(() {
@@ -37,10 +41,34 @@ class _SchedulePageState extends State<SchedulePage> {
         );
         break;
       case 2:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => ResultNew()),
-        );
+        try {
+          final dir = await getApplicationDocumentsDirectory();
+          final file = File('${dir.path}/signup_data.json');
+          if (await file.exists()) {
+            final jsonString = await file.readAsString();
+            final Map<String, dynamic> data = jsonDecode(jsonString);
+            final bool result = data['result'] == true;
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => result ? Result1() : ResultNew(),
+              ),
+            );
+          } else {
+            // Fallback if file not found
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => ResultNew()),
+            );
+          }
+        } catch (e) {
+          debugPrint('Error reading result from file: $e');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => ResultNew()),
+          );
+        }
         break;
       case 3:
         Navigator.pushReplacement(
