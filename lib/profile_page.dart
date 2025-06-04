@@ -7,9 +7,12 @@ import 'home_page.dart';
 import 'footer.dart';
 import 'schedule_page.dart';
 import 'package:path_provider/path_provider.dart';
-import 'dart:convert'; // Needed for jsonDecode
-import 'dart:io';      // Needed for File
-
+import 'dart:convert';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
+import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 void main() {
   runApp(ProfileApp());
@@ -33,6 +36,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   int _selectedIndex = 3;
   String? _username;
+  File? _profileImage;
 
   final List<IconData> _icons = [
     Icons.home,
@@ -94,9 +98,53 @@ class _ProfilePageState extends State<ProfilePage> {
           _username = user['username'];
         });
       }
+
+      final imagePathFile = File('${dir.path}/profile_image_path.txt');
+      if (await imagePathFile.exists()) {
+        final imagePath = await imagePathFile.readAsString();
+        setState(() {
+          _profileImage = File(imagePath);
+        });
+      }
     } catch (e) {
-      // Handle any read/parse errors
-      debugPrint('Error loading username: $e');
+      debugPrint('Error loading data: $e');
+    }
+  }
+
+  Future<void> _pickImage() async {
+
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+
+    if (Platform.isAndroid) {
+      final androidVersion = int.parse(androidInfo.version.sdkInt.toString());
+
+      final permission = androidVersion >= 33
+          ? Permission.photos  // use Permission.photos for Android 13+
+          : Permission.storage;
+
+      final status = await permission.request();
+
+      if (!status.isGranted) {
+        debugPrint('Permission denied');
+        return;
+      }
+    }
+
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+
+    if (pickedFile != null) {
+      final dir = await getApplicationDocumentsDirectory();
+      final savedImage = await File(pickedFile.path)
+          .copy('${dir.path}/${path.basename(pickedFile.path)}');
+
+      final pathFile = File('${dir.path}/profile_image_path.txt');
+      await pathFile.writeAsString(savedImage.path);
+
+      setState(() {
+        _profileImage = savedImage;
+      });
     }
   }
 
@@ -105,7 +153,6 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     _loadUsername();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -116,17 +163,28 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             Spacer(flex: 3),
             Center(
-              child: Container(
-                width: 250,
-                height: 250,
-                decoration: BoxDecoration(
-                  color: Color(0xCCD1DEC1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.add,
-                  size: 80,
-                  color: Colors.white,
+              child: GestureDetector(
+                onTap: _pickImage,
+                child: Container(
+                  width: 250,
+                  height: 250,
+                  decoration: BoxDecoration(
+                    color: Color(0xCCD1DEC1),
+                    shape: BoxShape.circle,
+                    image: _profileImage != null
+                        ? DecorationImage(
+                      image: FileImage(_profileImage!),
+                      fit: BoxFit.cover,
+                    )
+                        : null,
+                  ),
+                  child: _profileImage == null
+                      ? Icon(
+                    Icons.add,
+                    size: 80,
+                    color: Colors.white,
+                  )
+                      : null,
                 ),
               ),
             ),

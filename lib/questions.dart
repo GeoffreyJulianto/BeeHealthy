@@ -4,22 +4,20 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'result_new.dart';
-import 'result_1.dart';
-import 'result_2.dart';
 import 'questionresult5.dart';
 import 'questionresult4.dart';
 import 'questionresult3.dart';
 import 'questionresult2.dart';
 import 'questionresult1.dart';
 
-
 class SurveyQuestion {
   final String question;
   final List<String> options;
   final List<String> emojis;
+  final List<int> weights;
   final String imagePath;
 
-  SurveyQuestion(this.question, this.options, this.emojis, this.imagePath);
+  SurveyQuestion(this.question, this.options, this.emojis, this.weights, this.imagePath);
 }
 
 class SleepSurveyBundle extends StatefulWidget {
@@ -31,40 +29,45 @@ class SleepSurveyBundle extends StatefulWidget {
 
 class SleepSurveyBundleState extends State<SleepSurveyBundle> {
   final PageController _controller = PageController();
-  double progress = 0.0; // Current fill percentage: 0.0 to 1.0
+  double progress = 0.0;
   Map<String, String> surveyAnswers = {};
-
   int currentQuestion = 0;
+  int totalScore = 0;
 
   final List<SurveyQuestion> questions = [
     SurveyQuestion(
-      "On average, how many hours do you sleep each night?",
-      ["Less than 5 hours", "5–6 hours", "7–8 hours", "9 or more hours"],
-      ["😪", "😟", "😌", "🤔"],
-      "assets/img_Q1.png"
+        "On average, how many hours do you sleep each night?",
+        ["Less than 5 hours", "5–6 hours", "7–8 hours", "9 or more hours"],
+        ["😪", "😟", "😌", "🤔"],
+        [2, 3, 4, 1],
+        "assets/img_Q1.png"
     ),
     SurveyQuestion(
-      "How many hours do you spend on productive activities (work, studies, etc.) during a typical weekday?",
-      ["Less than 2 hours", "2-4 hours", "5-7 hours", "8 or more hours"],
-      ["😪", "🙂", "😄", "🤯"],
+        "How many hours do you spend on productive activities (work, studies, etc.) during a typical weekday?",
+        ["Less than 2 hours", "2-4 hours", "5-7 hours", "8 or more hours"],
+        ["😪", "🙂", "😄", "🤯"],
+        [1, 2, 3, 4],
         "assets/img_Q2.png"
     ),
     SurveyQuestion(
-      "How many hours do you have available for free time and leisure activities during a typical weekday?",
-      ["Less than 2 hours", "2-4 hours", "more than 5 hours"],
-      ["🤏", "🙂", "😎"],
+        "How many hours do you have available for free time and leisure activities during a typical weekday?",
+        ["Less than 2 hours", "2-4 hours", "more than 5 hours"],
+        ["🤏", "🙂", "😎"],
+        [1, 2, 3],
         "assets/img_Q3.png"
     ),
     SurveyQuestion(
-      "How often do you feel rested and energized after a night's sleep?",
-      ["Rarely or never", "Occasionally", "Most of the time", "Almost always"],
-      ["😪", "😔", "😄", "🤩"],
+        "How often do you feel rested and energized after a night's sleep?",
+        ["Rarely or never", "Occasionally", "Most of the time", "Almost always"],
+        ["😪", "😔", "😄", "🤩"],
+        [1, 2, 3, 4],
         "assets/img_Q4.png"
     ),
     SurveyQuestion(
-      "How well do you manage your time and prioritize tasks?",
-      ["Very poorly", "Somewhat poorly", "Fairly well", "Very well"],
-      ["😵", "🤔", "🙂", "😎"],
+        "How well do you manage your time and prioritize tasks?",
+        ["Very poorly", "Somewhat poorly", "Fairly well", "Very well"],
+        ["😵", "🤔", "🙂", "😎"],
+        [1, 2, 3, 4],
         "assets/img_Q5.png"
     ),
   ];
@@ -79,16 +82,23 @@ class SleepSurveyBundleState extends State<SleepSurveyBundle> {
     await prefs.setString('question_$index', answer);
   }
 
-  void nextQuestion(String answer) async {
-    await saveAnswer(currentQuestion, answer);
-    if (currentQuestion < questions.length - 1) {
-      setState(() => currentQuestion++);
-      _controller.nextPage(duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+  void navigateToProfile(int score) {
+    Widget page;
+    if (score >= 19) {
+      page = ProductivityProfile5();
+    } else if (score >= 16) {
+      page = ProductivityProfile4();
+    } else if (score >= 13) {
+      page = ProductivityProfile3();
+    } else if (score >= 10) {
+      page = ProductivityProfile2();
     } else {
-      // All questions done
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Survey completed!")));
+      page = ProductivityProfile1();
     }
+
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => page),
+    );
   }
 
   Widget buildOption(String text, String emoji, int index) {
@@ -96,7 +106,8 @@ class SleepSurveyBundleState extends State<SleepSurveyBundle> {
       onTap: () async {
         setState(() {
           progress = (currentQuestion + 1) / questions.length;
-          surveyAnswers[questions[currentQuestion].question] = text;
+          surveyAnswers["q${currentQuestion + 1}"] = String.fromCharCode(97 + index);
+          totalScore += questions[currentQuestion].weights[index];
         });
 
         final file = await _localFile;
@@ -111,10 +122,7 @@ class SleepSurveyBundleState extends State<SleepSurveyBundle> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("Survey completed. Here is your recommended Productivity Profile.")),
             );
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => Result1()),
-            // );
+            navigateToProfile(totalScore);
           }
         });
       },
@@ -136,17 +144,17 @@ class SleepSurveyBundleState extends State<SleepSurveyBundle> {
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     final question = questions[currentQuestion];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFBDF5A), // yellow background for entire screen
+      backgroundColor: const Color(0xFFFBDF5A),
       body: Column(
         children: [
-          // ✅ Top white area with rounded bottom that holds the image (1/6 of screen)
           SizedBox(
-            height: MediaQuery.of(context).size.height *2/ 7,
+            height: MediaQuery.of(context).size.height * 2 / 7,
             child: ClipRRect(
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(24),
@@ -164,10 +172,8 @@ class SleepSurveyBundleState extends State<SleepSurveyBundle> {
               ),
             ),
           ),
-
-          // ✅ Yellow area with question and options (4/6 of screen)
           SizedBox(
-            height: MediaQuery.of(context).size.height *4 / 7,
+            height: MediaQuery.of(context).size.height * 4 / 7,
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
@@ -199,8 +205,6 @@ class SleepSurveyBundleState extends State<SleepSurveyBundle> {
               ),
             ),
           ),
-
-          // ✅ Bottom progress section with dark background (1/6 of screen)
           SizedBox(
             height: MediaQuery.of(context).size.height / 7,
             child: Container(
@@ -210,10 +214,8 @@ class SleepSurveyBundleState extends State<SleepSurveyBundle> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Progress bar with arrows on each side
                   Row(
                     children: [
-                      // ⬅️ Previous button
                       IconButton(
                         icon: const Icon(Icons.arrow_back),
                         color: Colors.white,
@@ -226,8 +228,6 @@ class SleepSurveyBundleState extends State<SleepSurveyBundle> {
                         }
                             : null,
                       ),
-
-                      // 🔵 Custom animated progress bar
                       Expanded(
                         child: LayoutBuilder(
                           builder: (context, constraints) {
@@ -235,7 +235,6 @@ class SleepSurveyBundleState extends State<SleepSurveyBundle> {
 
                             return Stack(
                               children: [
-                                // Background bar
                                 Container(
                                   height: 24,
                                   decoration: BoxDecoration(
@@ -243,8 +242,6 @@ class SleepSurveyBundleState extends State<SleepSurveyBundle> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-
-                                // Foreground animated fill
                                 AnimatedContainer(
                                   duration: const Duration(milliseconds: 400),
                                   width: barWidth,
@@ -254,8 +251,6 @@ class SleepSurveyBundleState extends State<SleepSurveyBundle> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-
-                                // Percentage text aligned in blue bar
                                 Positioned.fill(
                                   child: Align(
                                     alignment: Alignment.centerLeft,
@@ -277,8 +272,6 @@ class SleepSurveyBundleState extends State<SleepSurveyBundle> {
                           },
                         ),
                       ),
-
-                      // ➡️ Next button
                       IconButton(
                         icon: const Icon(Icons.arrow_forward),
                         color: Colors.white,
@@ -293,7 +286,6 @@ class SleepSurveyBundleState extends State<SleepSurveyBundle> {
                       ),
                     ],
                   ),
-
                   Text(
                     "Question ${currentQuestion + 1} of ${questions.length}",
                     style: const TextStyle(color: Colors.white),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'dart:io';
+import 'dart:convert';
+import 'package:path_provider/path_provider.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -101,7 +104,9 @@ class ProductivityProfile1 extends StatelessWidget {
                           ),
                           padding: EdgeInsets.symmetric(horizontal: 32, vertical: 13),
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          updateJsonResult();
+                        },
                         child: Text(
                           "Save Changes",
                           style: TextStyle(
@@ -120,6 +125,33 @@ class ProductivityProfile1 extends StatelessWidget {
         ],
       ),
     );
+  }
+  Future<File> get _localFile async {
+    final directory = await getApplicationDocumentsDirectory();
+    return File('${directory.path}/signup_data.json'); // 🔁 Updated file path
+  }
+
+  Future<void> updateJsonResult() async {
+    try {
+      final file = await _localFile;
+
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        final jsonData = json.decode(content);
+
+        if (jsonData is Map) {
+          jsonData['result'] = true; // ✅ Set result to true
+          await file.writeAsString(json.encode(jsonData));
+          print('Updated "result" to true in signup_data.json.');
+        } else {
+          print('signup_data.json is not a valid JSON object.');
+        }
+      } else {
+        print('signup_data.json does not exist.');
+      }
+    } catch (e) {
+      print('Error updating signup_data.json: $e');
+    }
   }
 }
 

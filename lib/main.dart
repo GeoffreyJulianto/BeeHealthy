@@ -13,7 +13,7 @@ class BeeProductiveApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'BeeProductive',
+      title: 'BeeHealthy',
       theme: ThemeData(
         primarySwatch: Colors.amber,
       ),
@@ -46,7 +46,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  'Welcome to\nBeeProductive!',
+                  'Welcome to\nBeeHealthy!',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 24,

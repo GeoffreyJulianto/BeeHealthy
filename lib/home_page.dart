@@ -7,7 +7,7 @@ import 'profile_page.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:convert'; // Needed for jsonDecode
 import 'dart:io';      // Needed for File
-import 'questionresult1.dart';
+import 'result_1.dart';
 
 void main() {
   runApp(const HomePage());
@@ -29,40 +29,64 @@ class _HomePageState extends State<HomePage> {
     const HomePage(),
   ];
 
-void _onItemTapped(int index) {
-  if (index == _selectedIndex) return;
+  void _onItemTapped(int index) async {
+    if (index == _selectedIndex) return;
 
-  setState(() {
-    _selectedIndex = index;
-  });
+    setState(() {
+      _selectedIndex = index;
+    });
 
-  switch (index) {
-    case 0:
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
-      break;
-    case 1:
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const SchedulePage()),
-      );
-      break;
-    case 2:
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ResultNew()),
-      );
-      break;
-    case 3:
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ProfilePage()),
-      );
-      break;
+    switch (index) {
+      case 0:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+        break;
+      case 1:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const SchedulePage()),
+        );
+        break;
+      case 2:
+        try {
+          final dir = await getApplicationDocumentsDirectory();
+          final file = File('${dir.path}/signup_data.json');
+          if (await file.exists()) {
+            final jsonString = await file.readAsString();
+            final Map<String, dynamic> data = jsonDecode(jsonString);
+            final bool result = data['result'] == true;
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => result ? Result1() : ResultNew(),
+              ),
+            );
+          } else {
+            // Fallback if file not found
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => ResultNew()),
+            );
+          }
+        } catch (e) {
+          debugPrint('Error reading result from file: $e');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => ResultNew()),
+          );
+        }
+        break;
+      case 3:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ProfilePage()),
+        );
+        break;
+    }
   }
-}
 
   Future<void> _loadUsername() async {
     try {
@@ -159,10 +183,10 @@ void _onItemTapped(int index) {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.orange,
         onPressed: () {
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => ProductivityProfile1())
-          );
+          // Navigator.pushReplacement(
+          //     context,
+          //     MaterialPageRoute(builder: (context) => ProductivityProfile1())
+          // );
         },
         child: const Icon(Icons.add),
       ),

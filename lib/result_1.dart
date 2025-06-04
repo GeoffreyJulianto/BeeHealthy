@@ -7,10 +7,10 @@ import 'result_new.dart';
 
 class Result1 extends StatefulWidget {
   @override
-  State<Result1> createState() => _Result2State();
+  State<Result1> createState() => _Result1State();
 }
 
-class _Result2State extends State<Result1> {
+class _Result1State extends State<Result1> {
   int _selectedIndex = 2;
 
   void _onItemTapped(int index) {

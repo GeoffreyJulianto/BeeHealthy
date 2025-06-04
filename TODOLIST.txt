@@ -1,0 +1,10 @@
+1) pertama ganti isi json jawaban (jawabannya pendekin,contoh jadi q1=a, q2=b,....), abis itu tentuin kombinasi mau dapet profile apa kalo jawab apa, langsung implement
+
+2) masukin fitur profile pic, masukin ke profile page sama home page
+
+3) pastiin semua page udah bisa kelink, kyk result1 sama result2 cuma bisa diakses setelah kuis (mungkin bisa taro codenya di pemiliihan index page)
+
+4) selesain schedule planner nya, supaya muncul di home page dlu aja, sambungin ke result nanti aja itu
+
+5) tambahin di results button redo quiz, caranya ganti di signup json filenya, ada true/false di isinya, bisa mainin, kalo true kita ke result1 atau result2 page, kalo false kita ke resultnew)
+

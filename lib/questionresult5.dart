@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'dart:io';
+import 'dart:convert';
+import 'package:path_provider/path_provider.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -33,11 +36,11 @@ class ProductivityProfile5 extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Color(0xFFC5DDFF), // Light blue (top)
-                    Color(0xFFC5DDFF), // Still light blue
-                    Color(0xFF1F2B37), // Slightly darker at bottom
+                    Color(0xFFC5DDFF),
+                    Color(0xFFC5DDFF),
+                    Color(0xFF1F2B37),
                   ],
-                  stops: [0.0, 0.7, 1.0], // Apply darkening only in last 20%
+                  stops: [0.0, 0.7, 1.0],
                 ),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(24),
@@ -73,17 +76,14 @@ class ProductivityProfile5 extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 36),
-
                     Center(
                       child: CustomPaint(
                         size: Size(330, 330),
                         painter: PieChartPainter(),
                       ),
                     ),
-
                     const SizedBox(height: 24),
                     const SizedBox(height: 48),
-
                     Center(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
@@ -91,13 +91,15 @@ class ProductivityProfile5 extends StatelessWidget {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(24),
                             side: BorderSide(
-                              color: Colors.black87, // border color
-                              width: 1.5,            // border thickness
+                              color: Colors.black87,
+                              width: 1.5,
                             ),
                           ),
                           padding: EdgeInsets.symmetric(horizontal: 32, vertical: 13),
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          updateJsonResult();
+                        },
                         child: Text(
                           "Save Changes",
                           style: TextStyle(
@@ -117,6 +119,34 @@ class ProductivityProfile5 extends StatelessWidget {
       ),
     );
   }
+
+  Future<File> get _localFile async {
+    final directory = await getApplicationDocumentsDirectory();
+    return File('${directory.path}/signup_data.json'); // 🔁 Updated file path
+  }
+
+  Future<void> updateJsonResult() async {
+    try {
+      final file = await _localFile;
+
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        final jsonData = json.decode(content);
+
+        if (jsonData is Map) {
+          jsonData['result'] = true; // ✅ Set result to true
+          await file.writeAsString(json.encode(jsonData));
+          print('Updated "result" to true in signup_data.json.');
+        } else {
+          print('signup_data.json is not a valid JSON object.');
+        }
+      } else {
+        print('signup_data.json does not exist.');
+      }
+    } catch (e) {
+      print('Error updating signup_data.json: $e');
+    }
+  }
 }
 
 class PieChartPainter extends CustomPainter {
@@ -132,15 +162,12 @@ class PieChartPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
 
-// Draw shadow
     final shadowPaint = Paint()
       ..color = const Color.fromARGB(255, 0, 0, 0)
       ..maskFilter = MaskFilter.blur(BlurStyle.normal, 20);
 
     canvas.drawCircle(center, radius - 10, shadowPaint);
     double startAngle = -pi / 2;
-
-
 
     for (final segment in segments) {
       final sweepAngle = segment.percentage * 2 * pi;
@@ -153,7 +180,6 @@ class PieChartPainter extends CustomPainter {
         paint,
       );
 
-      // Label positioning
       final labelAngle = startAngle + sweepAngle / 2;
       final labelRadius = radius * 0.65;
       final labelX = center.dx + labelRadius * cos(labelAngle);
@@ -176,7 +202,6 @@ class PieChartPainter extends CustomPainter {
       textPainter.text = textSpan;
       textPainter.layout(maxWidth: radius);
 
-      // White background behind label
       final bgRect = Rect.fromLTWH(
         labelX - textPainter.width / 2 - 4,
         labelY - textPainter.height / 2 - 2,
@@ -193,7 +218,6 @@ class PieChartPainter extends CustomPainter {
         bgPaint,
       );
 
-      // Draw text
       canvas.save();
       canvas.translate(
         labelX - textPainter.width / 2,
@@ -205,7 +229,6 @@ class PieChartPainter extends CustomPainter {
       startAngle += sweepAngle;
     }
 
-    // Draw black border around the pie chart
     final borderPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
