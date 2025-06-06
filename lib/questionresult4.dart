@@ -105,8 +105,9 @@ class ProductivityProfile4 extends StatelessWidget {
                           ),
                           padding: EdgeInsets.symmetric(horizontal: 32, vertical: 13),
                         ),
-                        onPressed: () {
+                        onPressed: () async {
                           updateJsonResult();
+                          await saveProductivityProfile();
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => Result1()),
@@ -136,6 +137,11 @@ class ProductivityProfile4 extends StatelessWidget {
     return File('${directory.path}/signup_data.json'); // 🔁 Updated file path
   }
 
+  Future<File> get _profileFile async {
+    final directory = await getApplicationDocumentsDirectory();
+    return File('${directory.path}/productivity_profile.json');
+  }
+
   Future<void> updateJsonResult() async {
     try {
       final file = await _localFile;
@@ -158,6 +164,24 @@ class ProductivityProfile4 extends StatelessWidget {
       print('Error updating signup_data.json: $e');
     }
   }
+
+  Future<void> saveProductivityProfile() async {
+    try {
+      final file = await _profileFile;
+      final profileData = {
+        "profile": "Elite Conqueror",
+        "sleep": 6,
+        "productivity": 9.6,
+        "leisure": 8.4
+      };
+
+      await file.writeAsString(json.encode(profileData));
+      print('Saved productivity profile to productivity_profile.json.');
+    } catch (e) {
+      print('Error saving productivity_profile.json: $e');
+    }
+  }
+
 }
 
 class PieChartPainter extends CustomPainter {

@@ -105,8 +105,9 @@ class ProductivityProfile2 extends StatelessWidget {
                           ),
                           padding: EdgeInsets.symmetric(horizontal: 32, vertical: 13),
                         ),
-                        onPressed: () {
+                        onPressed: () async {
                           updateJsonResult();
+                          await saveProductivityProfile();
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => Result1()),
@@ -136,6 +137,11 @@ class ProductivityProfile2 extends StatelessWidget {
     return File('${directory.path}/signup_data.json'); // 🔁 Updated file path
   }
 
+  Future<File> get _profileFile async {
+    final directory = await getApplicationDocumentsDirectory();
+    return File('${directory.path}/productivity_profile.json');
+  }
+
   Future<void> updateJsonResult() async {
     try {
       final file = await _localFile;
@@ -156,6 +162,23 @@ class ProductivityProfile2 extends StatelessWidget {
       }
     } catch (e) {
       print('Error updating signup_data.json: $e');
+    }
+  }
+
+  Future<void> saveProductivityProfile() async {
+    try {
+      final file = await _profileFile;
+      final profileData = {
+        "profile": "Risk Explorer",
+        "sleep": 6,
+        "productivity": 4.8,
+        "leisure": 13.2,
+      };
+
+      await file.writeAsString(json.encode(profileData));
+      print('Saved productivity profile to productivity_profile.json.');
+    } catch (e) {
+      print('Error saving productivity_profile.json: $e');
     }
   }
 }

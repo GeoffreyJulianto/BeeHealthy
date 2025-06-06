@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'main.dart';
-import 'result_2.dart';
 import 'result_1.dart';
 import 'result_new.dart';
 import 'home_page.dart';

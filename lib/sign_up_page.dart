@@ -46,8 +46,9 @@ class _SignUpPageState extends State<SignUpPage> {
     // File paths
     final profilePathFile = File('${directory.path}/profile_image_path.txt');
     final surveyAnswersFile = File('${directory.path}/survey_answers.json');
+    final scheduleDataFile = File('${directory.path}/schedule_data.json');
 
-    // Delete profile image if path exists
+    // Delete profile image and path
     if (await profilePathFile.exists()) {
       try {
         final imagePath = await profilePathFile.readAsString();
@@ -58,12 +59,17 @@ class _SignUpPageState extends State<SignUpPage> {
       } catch (e) {
         debugPrint("Error reading/deleting profile image: $e");
       }
-      await profilePathFile.delete(); // Delete the path file itself
+      await profilePathFile.delete();
     }
 
     // Delete survey answers
     if (await surveyAnswersFile.exists()) {
       await surveyAnswersFile.delete();
+    }
+
+    // Delete schedule data
+    if (await scheduleDataFile.exists()) {
+      await scheduleDataFile.delete();
     }
 
     // Save new signup data
@@ -76,7 +82,6 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,18 +89,14 @@ class _SignUpPageState extends State<SignUpPage> {
         leading: const BackButton(color: Colors.black),
         centerTitle: true,
         title: const Text(
-            "Sign Up",
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 25,
-                color: Colors.black
-            )
+          "Sign Up",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25, color: Colors.black),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.only(left: 40, right: 40, top: 5, bottom: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
         child: Form(
           key: _formKey,
           child: Column(children: [
@@ -166,7 +167,6 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
             const SizedBox(height: 12),
 
-            //Password
             buildPasswordField(
               label: 'Password',
               obscureText: _obscurePassword,
@@ -184,7 +184,7 @@ class _SignUpPageState extends State<SignUpPage> {
               toggleVisibility: () {
                 setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
               },
-              onChanged: (value) => password = value,
+              onChanged: (value) => confirmPassword = value,
               validator: (value) {
                 if (value != passwordController.text) return 'Passwords do not match';
                 return null;
@@ -193,12 +193,11 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
             const SizedBox(height: 16),
 
-            //Sign Up Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromRGBO(229,155,60, 1),
+                  backgroundColor: Color.fromRGBO(229, 155, 60, 1),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 onPressed: () {
@@ -218,34 +217,28 @@ class _SignUpPageState extends State<SignUpPage> {
                   }
                 },
                 child: const Text(
-                    "SIGN UP",
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500
-                    )
+                  "SIGN UP",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 12),
-
-            //Sign In Button
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text("Already have account? "),
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LoginPage())
-                    );
-                  }, // TODO: Navigate to Sign In page
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+                  },
                   child: const Text("Sign In", style: TextStyle(color: Colors.blue)),
                 ),
               ],
             ),
-
           ]),
         ),
       ),
@@ -266,20 +259,20 @@ class _SignUpPageState extends State<SignUpPage> {
     required void Function() toggleVisibility,
     required void Function(String) onChanged,
     required String? Function(String?) validator,
-    required controller
+    required TextEditingController controller,
   }) {
     return TextFormField(
-    controller: controller,
-    obscureText: obscureText,
-    decoration: InputDecoration(
+      controller: controller,
+      obscureText: obscureText,
+      decoration: InputDecoration(
         labelText: label,
-      suffixIcon: IconButton(
-        icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility),
-        onPressed: toggleVisibility,
+        suffixIcon: IconButton(
+          icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility),
+          onPressed: toggleVisibility,
+        ),
       ),
-    ),
-    onChanged: onChanged,
-    validator: validator
+      onChanged: onChanged,
+      validator: validator,
     );
   }
 }

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-// import 'package:flutter_svg/flutter_svg.dart';
-import 'footer.dart';
-import 'home_page.dart';
-import 'scheduleCategory_page.dart';
-import 'result_new.dart';
-import 'profile_page.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'footer.dart';
+import 'scheduleCategory_page.dart';
+import 'home_page.dart';
+import 'result_new.dart';
+import 'profile_page.dart';
 import 'result_1.dart';
 
 class SchedulePage extends StatefulWidget {
@@ -18,7 +17,68 @@ class SchedulePage extends StatefulWidget {
 }
 
 class _SchedulePageState extends State<SchedulePage> {
-  int _selectedIndex = 1; // Highlight "Plans"
+  int _selectedIndex = 1;
+  List<Map<String, dynamic>> _schedules = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSchedules();
+  }
+
+  Future<void> _loadSchedules() async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final file = File('${dir.path}/schedule_data.json');
+      if (await file.exists()) {
+        final jsonString = await file.readAsString();
+        final List<dynamic> data = jsonDecode(jsonString);
+        setState(() {
+          _schedules = data.cast<Map<String, dynamic>>();
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading schedules: $e');
+    }
+  }
+
+  Future<void> _saveSchedules() async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final file = File('${dir.path}/schedule_data.json');
+      final jsonString = jsonEncode(_schedules);
+      await file.writeAsString(jsonString);
+    } catch (e) {
+      debugPrint('Error saving schedules: $e');
+    }
+  }
+
+  Future<void> _deleteSchedule(int index) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Delete Schedule"),
+        content: const Text("Are you sure you want to delete this schedule?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() {
+        _schedules.removeAt(index);
+      });
+      await _saveSchedules();
+    }
+  }
 
   void _onItemTapped(int index) async {
     if (index == _selectedIndex) return;
@@ -56,7 +116,6 @@ class _SchedulePageState extends State<SchedulePage> {
               ),
             );
           } else {
-            // Fallback if file not found
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => ResultNew()),
@@ -97,16 +156,15 @@ class _SchedulePageState extends State<SchedulePage> {
             end: Alignment.bottomCenter,
             stops: [0.0, 0.60, 1.0],
             colors: [
-              Color(0xFFFFFFFF), // White
-              Color(0xFF8ECBC0), // Light teal
-              Color(0xFF1F2B37), // Dark navy
+              Color(0xFFFFFFFF),
+              Color(0xFF8ECBC0),
+              Color(0xFF1F2B37),
             ],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              // Top AppBar replacement
               Padding(
                 padding: const EdgeInsets.only(top: 32, left: 16, right: 16, bottom: 16),
                 child: Row(
@@ -123,38 +181,83 @@ class _SchedulePageState extends State<SchedulePage> {
                   ],
                 ),
               ),
-
-              // const SizedBox(height: 100), // Spacing
-
-              // Add Schedule Button
-                GestureDetector(
+              GestureDetector(
                 onTap: _navigateToScheduleCategory,
                 child: Container(
                   width: double.infinity,
                   margin: const EdgeInsets.symmetric(horizontal: 30),
                   padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                   decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black54, width: 1.2),
-                  borderRadius: BorderRadius.circular(10),
-                  // Remove color to make background transparent and follow page gradient
-                  // color: Colors.white.withOpacity(0.85),
+                    border: Border.all(color: Colors.black54, width: 1.2),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.add, color: Colors.black),
-                    SizedBox(width: 10),
-                    Text(
-                    'Add a new schedule',
-                    style: TextStyle(fontSize: 16, color: Colors.black54),
-                    ),
-                  ],
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.add, color: Colors.black),
+                      SizedBox(width: 10),
+                      Text(
+                        'Add a new schedule',
+                        style: TextStyle(fontSize: 16, color: Colors.black54),
+                      ),
+                    ],
                   ),
                 ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: _schedules.isEmpty
+                    ? const Center(
+                  child: Text(
+                    "No schedules available.",
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
+                )
+                    : ListView.builder(
+                  itemCount: _schedules.length,
+                  itemBuilder: (context, index) {
+                    final schedule = _schedules[index];
+                    final color = schedule['category'] == 'Productivity'
+                        ? const Color(0xFFFFA941)
+                        : Colors.yellow;
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.black),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${schedule['date']} | ${schedule['start_time']} - ${schedule['end_time']}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(schedule['description'] ?? '',
+                                    style: const TextStyle(fontSize: 14)),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _deleteSchedule(index),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-
-              // Expand remaining space so footer goes to bottom
-              const Spacer(),
+              ),
             ],
           ),
         ),
@@ -165,5 +268,4 @@ class _SchedulePageState extends State<SchedulePage> {
       ),
     );
   }
-
 }
